@@ -2,45 +2,82 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Avence</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
 </head>
 
 <body>
-    <div id="inputArea">hello world</div>
-    <button class="btn1">test1</button>
-    <script>
-        const btn1 = document.querySelector('.btn1');
-
-        btn1.addEventListener('click', (e) => {
-            const eventSource = new EventSource("./server.js");
-            eventSource.onopen = () => {
-                console.log("EventSource open.");
-            };
-            eventSource.addEventListener('error', e => {
-                if (e.target.readyState === EventSource.CLOSED) {
-                    console.log('Disconnected');
-                } else if (e.target.readyState === EventSource.CONNECTING) {
-                    console.log('Connecting...');
-                }
-            }, false);
-            // eventSource.onmessage = (e) => {
-            //     console.log(e.data);
-            // };
-
-            eventSource.addEventListener('slide', (e) => {
-                if (e.data === 'dataOver') {
-                    eventSource.close();
-                } else {
-                    document.querySelector('#inputArea').innerHTML += e.data
-                }
-
-            });
-        })
-
-
-    </script>
+  <canvas class="canvas"></canvas>
+  <input type="file" class="input" />
+  <input type="color" class="filterColor" />
+  <input type="number" class="colorRange" />
 </body>
+
+<script>
+  const inputEl = document.querySelector(".input");
+  const filterColor = document.querySelector(".filterColor");
+  const colorRange = document.querySelector(".colorRange");
+  const canvas = document.querySelector(".canvas");
+  const ctx = canvas.getContext("2d");
+  const img = new Image();
+  let [R, G, B] = [0, 0, 0];
+  let range = 10;
+
+  const formatColor = (color) => {
+    return color
+      .split(/\b/)[1]
+      .split("")
+      .map((t, i, arr) => {
+        return i % 2 === 1 ? `${arr[i - 1]}${t}` : "";
+      })
+      .filter((t) => t)
+      .map((t) => parseInt(t, 16));
+  };
+
+  const draw = () => {
+    if (img.src) {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0, img.width, img.height);
+      let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+      for (let i = 0; i < imgData.data.length; i += 4) {
+        let red = imgData.data[i];
+        let green = imgData.data[i + 1];
+        let blue = imgData.data[i + 2];
+
+        if (
+          !(R - range <= red &&
+            red <= R + range &&
+            G - range <= green &&
+            green <= G + range &&
+            B - range <= blue &&
+            blue <= B + range)
+        ) {
+          imgData.data[i + 3] = 0;
+        }
+      }
+      ctx.putImageData(imgData, 0, 0);
+    }
+  };
+
+  inputEl.addEventListener("change", () => {
+    img.onload = draw;
+    img.src = URL.createObjectURL(inputEl.files[0]);
+  });
+  colorRange.addEventListener("change", (e) => {
+    range = e.target.value;
+    draw();
+  });
+
+  filterColor.addEventListener("change", (e) => {
+    const color = formatColor(e.target.value);
+    R = color[0];
+    G = color[1];
+    B = color[2];
+    draw();
+  });
+</script>
 
 </html>
