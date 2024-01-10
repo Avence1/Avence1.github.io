@@ -2,82 +2,20 @@
 <html lang="en">
 
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Document</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>你在想什么，PM还没给链接🔗</title>
+  <style>
+    .content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
 </head>
 
 <body>
-  <canvas class="canvas"></canvas>
-  <input type="file" class="input" />
-  <input type="color" class="filterColor" />
-  <input type="number" class="colorRange" />
+  <div class="content">你在想什么，PM还没给链接🔗</div>
 </body>
-
-<script>
-  const inputEl = document.querySelector(".input");
-  const filterColor = document.querySelector(".filterColor");
-  const colorRange = document.querySelector(".colorRange");
-  const canvas = document.querySelector(".canvas");
-  const ctx = canvas.getContext("2d");
-  const img = new Image();
-  let [R, G, B] = [0, 0, 0];
-  let range = 10;
-
-  const formatColor = (color) => {
-    return color
-      .split(/\b/)[1]
-      .split("")
-      .map((t, i, arr) => {
-        return i % 2 === 1 ? `${arr[i - 1]}${t}` : "";
-      })
-      .filter((t) => t)
-      .map((t) => parseInt(t, 16));
-  };
-
-  const draw = () => {
-    if (img.src) {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0, img.width, img.height);
-      let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-
-      for (let i = 0; i < imgData.data.length; i += 4) {
-        let red = imgData.data[i];
-        let green = imgData.data[i + 1];
-        let blue = imgData.data[i + 2];
-
-        if (
-          !(R - range <= red &&
-            red <= R + range &&
-            G - range <= green &&
-            green <= G + range &&
-            B - range <= blue &&
-            blue <= B + range)
-        ) {
-          imgData.data[i + 3] = 0;
-        }
-      }
-      ctx.putImageData(imgData, 0, 0);
-    }
-  };
-
-  inputEl.addEventListener("change", () => {
-    img.onload = draw;
-    img.src = URL.createObjectURL(inputEl.files[0]);
-  });
-  colorRange.addEventListener("change", (e) => {
-    range = e.target.value;
-    draw();
-  });
-
-  filterColor.addEventListener("change", (e) => {
-    const color = formatColor(e.target.value);
-    R = color[0];
-    G = color[1];
-    B = color[2];
-    draw();
-  });
-</script>
 
 </html>
